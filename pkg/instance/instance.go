@@ -5,22 +5,14 @@ package instance
 import (
 	"fmt"
 	"net"
-	"os"
 	"sync"
-
-	"github.com/azazeal/fly/pkg/env"
 )
 
 // IP returns the IP address corresponding to named instance of the given app.
-func IP(hostname, app string) (ip net.IP, err error) {
+func IP(hostname, app string) (net.IP, error) {
 	fqdn := fmt.Sprintf("%s.vm.%s.internal", hostname, app)
 
-	var ips []net.IP
-	if ips, err = net.LookupIP(fqdn); err == nil && len(ips) > 0 {
-		ip = ips[0]
-	}
-
-	return
+	return lookupIP(fqdn)
 }
 
 var (
@@ -39,13 +31,17 @@ func PrivateIP() (ip net.IP, err error) {
 		return
 	}
 
-	var hostname string
-	if hostname, err = os.Hostname(); err != nil {
-		return
+	if ip, err = lookupIP("fly-local-6pn"); err == nil {
+		cachedIP = append(cachedIP, ip...)
 	}
 
-	if ip, err = IP(hostname, env.AppName()); err == nil {
-		cachedIP = append(cachedIP, ip...)
+	return
+}
+
+func lookupIP(host string) (ip net.IP, err error) {
+	var ips []net.IP
+	if ips, err = net.LookupIP(host); err == nil && len(ips) > 0 {
+		ip = ips[0]
 	}
 
 	return

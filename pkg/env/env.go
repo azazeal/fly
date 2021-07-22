@@ -52,7 +52,7 @@ func IsSet() bool {
 // will be nil.
 func Map() (kv map[string]string) {
 	for _, key := range keys {
-		v, ok := lookup(key)
+		v, ok := os.LookupEnv(key)
 		if !ok {
 			continue
 		}
@@ -66,49 +66,42 @@ func Map() (kv map[string]string) {
 	return
 }
 
-var lookup = os.LookupEnv
-
-func get(name string) string {
-	v, _ := lookup(name)
-	return v
-}
-
 // AppName is shorthand for os.Getenv(AppNameKey).
 func AppName() string {
-	return get(AppNameKey)
+	return os.Getenv(AppNameKey)
 }
 
 // LookupAppName is shorthand for os.LookupEnv(AppNameKey).
 func LookupAppName() (string, bool) {
-	return lookup(AppNameKey)
+	return os.LookupEnv(AppNameKey)
 }
 
 // AllocID is shorthand for os.Getenv(AllocIDKey).
 func AllocID() string {
-	return get(AllocIDKey)
+	return os.Getenv(AllocIDKey)
 }
 
 // LookupAllocID is shorthand for os.LookupEnv(AllocIDKey).
 func LookupAllocID() (string, bool) {
-	return lookup(AllocIDKey)
+	return os.LookupEnv(AllocIDKey)
 }
 
 // PublicIP is shorthand for os.Getenv(PublicIPKey).
 func PublicIP() string {
-	return get(PublicIPKey)
+	return os.Getenv(PublicIPKey)
 }
 
 // LookupPublicIP is shorthand for os.LookupEnv(PublicIPKey).
 func LookupPublicIP() (string, bool) {
-	return lookup(PublicIPKey)
+	return os.LookupEnv(PublicIPKey)
 }
 
 // Region is shorthand for os.Getenv(RegionKey).
 func Region() (v string) {
-	return get(RegionKey)
+	return os.Getenv(RegionKey)
 }
 
 // LookupRegion is shorthand for os.LookupEnv(RegionKey).
 func LookupRegion() (string, bool) {
-	return lookup(RegionKey)
+	return os.LookupEnv(RegionKey)
 }

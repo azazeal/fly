@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/azazeal/fly/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +18,7 @@ const (
 
 func TestIsSet(t *testing.T) {
 	forEachCase(t, func(t *testing.T, kase *testCase) {
-		defer envFromMap(kase.env)()
+		defer testutil.SetEnv(t, kase.env)()
 
 		assert.Equal(t, kase.exp, IsSet())
 	})
@@ -37,7 +38,7 @@ func TestMap(t *testing.T) {
 			exp[k] = v
 		}
 
-		defer envFromMap(kase.env)()
+		defer testutil.SetEnv(t, kase.env)()
 
 		assert.Equal(t, exp, Map())
 	})
@@ -69,32 +70,14 @@ func TestGetters(t *testing.T) {
 		get := funcs[key]
 
 		t.Run(key, func(t *testing.T) {
-			defer envFromMap(nil)()
+			defer testutil.SetEnv(t, nil)()
 			assert.Equal(t, "", get())
 
 			exp := value(t)
-			_ = envFromMap(map[string]string{key: exp})
+			_ = testutil.SetEnv(t, map[string]string{key: exp})
 			assert.Equal(t, exp, get())
 		})
 	}
-}
-
-func envFromMap(m map[string]string) func() {
-	return overrideLookup(func(key string) (val string, ok bool) {
-		val, ok = m[key]
-		return
-	})
-}
-
-func overrideLookup(fn func(string) (string, bool)) (restore func()) {
-	old := lookup
-	lookup = fn
-
-	restore = func() {
-		lookup = old
-	}
-
-	return
 }
 
 type testCase struct {

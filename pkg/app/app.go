@@ -15,7 +15,7 @@ func List() ([]string, error) {
 
 // Regions reports the regions the current application is deployed to.
 func Regions() ([]string, error) {
-	return Deployments(env.Region())
+	return Deployments(env.AppName())
 }
 
 // Deployments reports the regions the named application is deployed to.

@@ -10,5 +10,5 @@ import (
 
 // IP returns the IP address of the named peer.
 func IP(hostname string) (net.IP, error) {
-	return instance.LookupIP(hostname, env.AppName())
+	return instance.IP(hostname, env.AppName())
 }

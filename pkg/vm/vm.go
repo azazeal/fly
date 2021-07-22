@@ -20,7 +20,7 @@ var (
 	cachedIP   net.IP
 )
 
-// PrivateIP returns a copy of the local virtual machine's IP address.
+// PrivateIP returns a copy of the local virtual machine's private IP address.
 func PrivateIP() (ip net.IP, err error) {
 	cachedIPMu.Lock()
 	defer cachedIPMu.Unlock()
@@ -45,4 +45,12 @@ func lookupIP(host string) (ip net.IP, err error) {
 	}
 
 	return
+}
+
+// IPs returns the IP addresses of the virtual machines running for the named
+// app and in the named region.
+func IPs(region, app string) ([]net.IP, error) {
+	host := fmt.Sprintf("%s.%s.internal", region, app)
+
+	return net.LookupIP(host)
 }

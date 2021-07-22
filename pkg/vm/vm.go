@@ -1,6 +1,5 @@
-// Package instance implements functionality applicable to the local fly.io
-// instance.
-package instance
+// Package vm implements functionality applicable to the local fly.io vm.
+package vm
 
 import (
 	"fmt"
@@ -8,7 +7,7 @@ import (
 	"sync"
 )
 
-// IP returns the IP address corresponding to named instance of the given app.
+// IP returns the IP address corresponding to named vm of the named app.
 func IP(hostname, app string) (net.IP, error) {
 	fqdn := fmt.Sprintf("%s.vm.%s.internal", hostname, app)
 
@@ -20,7 +19,7 @@ var (
 	cachedIP   net.IP
 )
 
-// PrivateIP returns a copy of the local instance's IP address.
+// PrivateIP returns a copy of the local vm's IP address.
 func PrivateIP() (ip net.IP, err error) {
 	cachedIPMu.Lock()
 	defer cachedIPMu.Unlock()

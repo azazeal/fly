@@ -3,7 +3,7 @@
 
 # fly
 
-Package env implements functionality for when dealing with fly.io runtime environment.
+Package fly implements functionality for when dealing with fly.io's runtime environment.
 
 ## Usage
 

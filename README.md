@@ -3,7 +3,8 @@
 
 # fly
 
-Package fly implements functionality for when dealing with fly.io's runtime environment.
+Package fly and its subpackages implement functionality for when dealing with
+fly.io's runtime environment.
 
 ## Usage
 

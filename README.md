@@ -1,4 +1,5 @@
-[![build](https://github.com/azazeal/fly/actions/workflows/build.yml/badge.svg)](https://github.com/azazeal/fly/actions/workflows/build.yml)
+[![Build Status](https://github.com/azazeal/fly/actions/workflows/build.yml/badge.svg)](https://github.com/azazeal/fly/actions/workflows/build.yml)
+[![Coverage Report](https://coveralls.io/repos/github/azazeal/fly/badge.svg?branch=master)](https://coveralls.io/github/azazeal/fly?branch=master)
 [![Go Reference](https://pkg.go.dev/badge/github.com/azazeal/fly.svg)](https://pkg.go.dev/github.com/azazeal/fly)
 
 # fly

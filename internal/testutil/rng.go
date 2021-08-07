@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 	mand "math/rand"
+	"strings"
 	"testing"
 )
 
@@ -28,4 +29,22 @@ func Fill(t *testing.T, buf []byte) {
 	if _, err := io.ReadFull(RNG(t), buf); err != nil {
 		t.Fatalf("failed filling buffer: %v", err)
 	}
+}
+
+// HexString returns a string of l hex characters.
+func HexString(t *testing.T, l int) string {
+	t.Helper()
+
+	var buf strings.Builder
+	buf.Grow(l)
+
+	rng := RNG(t)
+
+	const allowed = "0123456789abcdef"
+	for i := 0; i < l; i++ {
+		c := allowed[rng.Intn(len(allowed))]
+		_ = buf.WriteByte(c)
+	}
+
+	return buf.String()
 }

@@ -25,6 +25,7 @@ jobs:
           path: "./..."
 
   test:
+    name: Test
     needs: lint
     strategy:
       matrix:
@@ -41,4 +42,22 @@ jobs:
       with:
           fetch-depth: 0
     - name: Run tests
-      run: go test ./...
+      run: |
+        COVERPKG=$(go list ./... | tr '\n' ,)
+        COVERPKG=${COVERPKG%?}
+        go test -race -coverpkg=${COVERPKG} -coverprofile=coverage.out -covermode=atomic ./...
+      shell: bash
+    - name: Upload coverage report
+      uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: coverage.out
+        flag-name: Go-${{ matrix.go }}
+        parallel: true
+
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          parallel-finished: true

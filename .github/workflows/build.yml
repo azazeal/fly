@@ -29,35 +29,29 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        go-version: [1.15.x, 1.16.x]
+        go: ['1.15', '1.16']
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: ${{ matrix.go-version }}
+        go-version: ${{ matrix.go }}
     - name: Checkout code
       uses: actions/checkout@v2
       with:
           fetch-depth: 0
     - name: Run tests
+      if: ${{ matrix.os != 'ubuntu-latest' || matrix.go != '1.16' }}
+      run: go test -race ./...
+    - name: Run tests & create coverage report
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.go == '1.16' }}
       run: |
         COVERPKG=$(go list ./... | tr '\n' ,)
         COVERPKG=${COVERPKG%?}
         go test -race -coverpkg=${COVERPKG} -coverprofile=coverage.out -covermode=atomic ./...
-      shell: bash
     - name: Upload coverage report
       uses: shogo82148/actions-goveralls@v1
+      if: ${{ hashFiles('coverage.out') != '' }}
       with:
         path-to-profile: coverage.out
-        flag-name: Go-${{ matrix.go }}
-        parallel: true
-
-  finish:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: shogo82148/actions-goveralls@v1
-        with:
-          parallel-finished: true

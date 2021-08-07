@@ -27,11 +27,10 @@ jobs:
   test:
     name: Test
     needs: lint
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         go: ['1.15', '1.16']
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
@@ -42,10 +41,10 @@ jobs:
       with:
           fetch-depth: 0
     - name: Run tests
-      if: ${{ matrix.os != 'ubuntu-latest' || matrix.go != '1.16' }}
+      if: ${{ matrix.go != '1.16' }}
       run: go test -race ./...
-    - name: Run tests & create coverage report
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.go == '1.16' }}
+    - name: Run tests & generate coverage report
+      if: ${{ matrix.go == '1.16' }}
       run: |
         COVERPKG=$(go list ./... | tr '\n' ,)
         COVERPKG=${COVERPKG%?}

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/azazeal/fly/internal/testutil"
+
 	"github.com/azazeal/fly/pkg/env"
 )
 

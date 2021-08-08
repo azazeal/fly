@@ -1,4 +1,4 @@
-// Package dns implements DNS-relatd functionality.
+// Package dns implements DNS-related functionality.
 package dns
 
 import (

@@ -9,12 +9,12 @@ import (
 )
 
 // RNG returns a reference to a Rand that's been seeded with a random seed.
-func RNG(t *testing.T) *mand.Rand {
-	t.Helper()
+func RNG(tb testing.TB) *mand.Rand {
+	tb.Helper()
 
 	buf := make([]byte, 8)
 	if _, err := rand.Read(buf); err != nil {
-		t.Fatalf("failed seeding RNG: %v", err)
+		tb.Fatalf("failed seeding RNG: %v", err)
 	}
 
 	seed := int64(binary.BigEndian.Uint64(buf))
@@ -22,13 +22,13 @@ func RNG(t *testing.T) *mand.Rand {
 }
 
 // HexString returns a string of l hex characters.
-func HexString(t *testing.T, l int) string {
-	t.Helper()
+func HexString(tb testing.TB, l int) string {
+	tb.Helper()
 
 	var buf strings.Builder
 	buf.Grow(l)
 
-	rng := RNG(t)
+	rng := RNG(tb)
 
 	const allowed = "0123456789abcdef"
 	for i := 0; i < l; i++ {

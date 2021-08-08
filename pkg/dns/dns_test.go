@@ -144,6 +144,30 @@ func TestPeer(t *testing.T) {
 	assert.Equal(t, testutil.ParseIP(t, ip2), got)
 }
 
+func TestPrivateIP(t *testing.T) {
+	const (
+		ip1 = "fdaa:0:22b7:a7b:aa0:12a5:aacb:2"
+		ip2 = "fdaa:0:22b7:a7b:ab8:244c:ae91:2"
+	)
+
+	defer stub(&mockResolver{
+		lookupIP: func(_ context.Context, network, name string) ([]net.IP, error) {
+			if network != "ip6" || name != "fly-local-6pn" {
+				return nil, assert.AnError
+			}
+
+			return []net.IP{
+				testutil.ParseIP(t, ip2),
+				testutil.ParseIP(t, ip1),
+			}, nil
+		},
+	})()
+
+	got, err := PrivateIP(context.TODO())
+	assert.NoError(t, err)
+	assert.Equal(t, testutil.ParseIP(t, ip2), got)
+}
+
 type mockResolver struct {
 	lookupTXT func(ctx context.Context, name string) ([]string, error)
 	lookupIP  func(ctx context.Context, network, host string) ([]net.IP, error)

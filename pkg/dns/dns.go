@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 )
 
 // Resolver wraps the functionality that instances of DNS rely on.
@@ -47,10 +48,16 @@ type DNS interface {
 
 	// Peer returns the IPv6 address of the named wireguard peer.
 	Peer(ctx context.Context, name string) (net.IP, error)
+
+	// PrivateIP returns the IPv6 address of the local instance.
+	PrivateIP(ctx context.Context) (net.IP, error)
 }
 
 type wrapper struct {
 	Resolver
+
+	privateIPMu sync.Mutex // protects privateIP
+	privateIP   net.IP
 }
 
 func (w *wrapper) splitTXT(ctx context.Context, name string) (tokens []string, err error) {
@@ -91,6 +98,24 @@ func (w *wrapper) Peer(ctx context.Context, name string) (ip net.IP, err error) 
 	return
 }
 
+func (w *wrapper) PrivateIP(ctx context.Context) (ip net.IP, err error) {
+	w.privateIPMu.Lock()
+	defer w.privateIPMu.Unlock()
+
+	if w.privateIP == nil {
+		const host = "fly-local-6pn"
+
+		var ips []net.IP
+		if ips, err = w.LookupIP(ctx, "ip6", host); err == nil && len(ips) > 0 {
+			w.privateIP = append(w.privateIP, ips[0]...)
+		}
+	}
+
+	ip = append(ip, w.privateIP...)
+
+	return
+}
+
 // Regions returns the regions the named application is deployed to.
 func Regions(ctx context.Context, appName string) ([]string, error) {
 	return global.Regions(ctx, appName)
@@ -121,4 +146,9 @@ func Peers(ctx context.Context) ([]string, error) {
 // Peer returns the IPv6 address of the named wireguard peer.
 func Peer(ctx context.Context, name string) (net.IP, error) {
 	return global.Peer(ctx, name)
+}
+
+// PrivateIP returns the IPv6 address of the local instance.
+func PrivateIP(ctx context.Context) (net.IP, error) {
+	return global.PrivateIP(ctx)
 }

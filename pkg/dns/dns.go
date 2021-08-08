@@ -36,8 +36,8 @@ type DNS interface {
 	// Regions returns the regions the named application is deployed to.
 	Regions(ctx context.Context, appName string) ([]string, error)
 
-	// Instances returns the IP addresses for the instances of the named
-	// application in the given region.
+	// Instances returns the IPv6 addresses for the instances of the 
+	// named application in the given region.
 	Instances(ctx context.Context, region, appName string) ([]net.IP, error)
 
 	// Apps returns the applications running in the current organization.
@@ -127,8 +127,8 @@ func AllInstances(ctx context.Context, appName string) ([]net.IP, error) {
 	return Instances(ctx, "global", appName)
 }
 
-// Instances returns the IP addresses for all of the instances of the named
-// application in the given region.
+// Instances returns the IPv6 addresses for all of the instances of the 
+// named application in the given region.
 func Instances(ctx context.Context, region, appName string) ([]net.IP, error) {
 	return global.Instances(ctx, region, appName)
 }

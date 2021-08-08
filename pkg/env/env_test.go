@@ -1,14 +1,12 @@
 package env
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"strconv"
 	"testing"
 
-	"github.com/azazeal/fly/internal/testutil"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+
+	"github.com/azazeal/fly/internal/testutil"
 )
 
 const (
@@ -146,11 +144,7 @@ func buildCases(t *testing.T) []*testCase {
 func value(t *testing.T) string {
 	t.Helper()
 
-	buf := make([]byte, 5)
-	_, err := rand.Read(buf)
-	require.NoError(t, err)
-
-	return hex.EncodeToString(buf)
+	return testutil.HexString(t, 10)
 }
 
 func isNonFlyKey(key string) bool {

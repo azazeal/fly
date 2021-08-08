@@ -1,4 +1,5 @@
-// Package dns implements DNS-related functionality.
+// Package dns implements functionality for when dealing with fly's internal
+// DNS.
 package dns
 
 import (

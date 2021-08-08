@@ -1,5 +1,5 @@
-// Package env implements functionality for when dealing with fly.io
-// environment variables.
+// Package env implements functionality for when dealing with fly's environment
+// variables.
 package env
 
 import "os"

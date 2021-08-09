@@ -5,7 +5,7 @@
 # fly
 
 Package fly and its subpackages implement functionality for when dealing with
-fly.io's runtime environment.
+[fly.io](https://fly.io)'s runtime environment.
 
 ## Usage
 

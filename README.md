@@ -47,6 +47,5 @@ $FLY_REGION: %s,
 	}
 
 	log.Printf("fly apps in our organization: %s", strings.Join(apps, ", "))
-
 }
 ```

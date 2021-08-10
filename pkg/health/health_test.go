@@ -74,6 +74,7 @@ func Test(t *testing.T) {
 			kase.check.ServeHTTP(rec, req)
 			res := rec.Result()
 
+			// TODO: use io.ReadAll when support for Go 1.15 is dropped
 			got, err := ioutil.ReadAll(res.Body)
 			require.NoError(t, err)
 

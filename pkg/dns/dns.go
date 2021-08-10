@@ -37,9 +37,12 @@ type DNS interface {
 	// Regions returns the regions the named application is deployed to.
 	Regions(ctx context.Context, appName string) ([]string, error)
 
-	// Instances returns the IPv6 addresses for the instances of the 
+	// Instances returns the IPv6 addresses for the instances of the
 	// named application in the given region.
-	Instances(ctx context.Context, region, appName string) ([]net.IP, error)
+	//
+	// Should the given region be empty, Instances returns all of the instances
+	// of the named application.
+	Instances(ctx context.Context, appName, region string) ([]net.IP, error)
 
 	// Apps returns the applications running in the current organization.
 	Apps(ctx context.Context) ([]string, error)
@@ -76,7 +79,11 @@ func (w *wrapper) Regions(ctx context.Context, appName string) ([]string, error)
 	return w.splitTXT(ctx, "regions."+appName+".internal")
 }
 
-func (w *wrapper) Instances(ctx context.Context, region, appName string) ([]net.IP, error) {
+func (w *wrapper) Instances(ctx context.Context, appName, region string) ([]net.IP, error) {
+	if region == "" {
+		region = "global"
+	}
+
 	return w.LookupIP(ctx, "ip6", region+"."+appName+".internal")
 }
 
@@ -122,14 +129,11 @@ func Regions(ctx context.Context, appName string) ([]string, error) {
 	return global.Regions(ctx, appName)
 }
 
-// AllInstances returns the IPv6 addresses for all of the instances of the
-// named application.
-func AllInstances(ctx context.Context, appName string) ([]net.IP, error) {
-	return Instances(ctx, "global", appName)
-}
-
-// Instances returns the IPv6 addresses for all of the instances of the 
+// Instances returns the IPv6 addresses for all of the instances of the
 // named application in the given region.
+//
+// Should the given region be empty, Instances returns all of the instances
+// of the named application.
 func Instances(ctx context.Context, region, appName string) ([]net.IP, error) {
 	return global.Instances(ctx, region, appName)
 }

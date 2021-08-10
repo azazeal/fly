@@ -56,7 +56,7 @@ func TestAllInstances(t *testing.T) {
 		},
 	})()
 
-	got, err := AllInstances(context.TODO(), appName)
+	got, err := Instances(context.TODO(), appName, "")
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, got, []net.IP{
 		net.ParseIP("fdaa:0:22b7:a7b:abd:aa3c:6498:2"),

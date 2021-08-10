@@ -1,6 +1,7 @@
 package health
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test(t *testing.T) {
+func TestFromContextPanics(t *testing.T) {
+	assert.Panics(t, func() { _ = FromContext(context.TODO()) })
+}
+
+func TestFromContext(t *testing.T) {
+	exp := new(Check)
+
+	ctx := NewContext(context.TODO(), exp)
+	assert.Same(t, exp, FromContext(ctx))
+}
+
+func TestServeHTTP(t *testing.T) {
 	const (
 		put  = http.MethodPut
 		get  = http.MethodGet

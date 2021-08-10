@@ -3,9 +3,27 @@
 package health
 
 import (
+	"context"
 	"net/http"
 	"sync"
 )
+
+type contextKeyType int
+
+const contextKey contextKeyType = iota + 1
+
+// NewContext derives a Context which carries the given Check from the given
+// one.
+func NewContext(ctx context.Context, c *Check) context.Context {
+	return context.WithValue(ctx, contextKey, c)
+}
+
+// FromContext returns the Check the given Context carries.
+//
+// FromContext panics in case the given Context carries no Check.
+func FromContext(ctx context.Context) *Check {
+	return ctx.Value(contextKey).(*Check)
+}
 
 // Check implements a health check as the logical summation of boolean named
 // components.

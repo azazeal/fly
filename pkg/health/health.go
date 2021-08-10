@@ -12,10 +12,9 @@ type contextKeyType int
 
 const contextKey contextKeyType = iota + 1
 
-// NewContext derives a Context which carries the given Check from the given
-// one.
-func NewContext(ctx context.Context, c *Check) context.Context {
-	return context.WithValue(ctx, contextKey, c)
+// NewContext returns a copy of ctx which carries check.
+func NewContext(ctx context.Context, check *Check) context.Context {
+	return context.WithValue(ctx, contextKey, check)
 }
 
 // FromContext returns the Check the given Context carries.

@@ -134,8 +134,8 @@ func Regions(ctx context.Context, appName string) ([]string, error) {
 //
 // Should the given region be empty, Instances returns all of the instances
 // of the named application.
-func Instances(ctx context.Context, region, appName string) ([]net.IP, error) {
-	return global.Instances(ctx, region, appName)
+func Instances(ctx context.Context, appName, region string) ([]net.IP, error) {
+	return global.Instances(ctx, appName, region)
 }
 
 // Apps returns the applications running in the current organization.

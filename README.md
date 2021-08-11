@@ -4,8 +4,8 @@
 
 # fly
 
-Package fly and its subpackages implement functionality for when dealing with
-[fly.io](https://fly.io)'s runtime environment.
+Package fly and its subpackages implement functionality useful for when 
+developing Go apps that run on [fly.io](https://fly.io).
 
 ## Usage
 

@@ -1,3 +1,3 @@
-// Package fly and its sub-packages implement runtime functionality for fly.io
-// apps.
+// Package fly and its subpackages implement functionality useful for when
+// developing Go apps that run on fly.io.
 package fly

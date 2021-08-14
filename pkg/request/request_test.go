@@ -4,7 +4,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/textproto"
 	"strconv"
 	"testing"
 
@@ -15,17 +14,12 @@ import (
 )
 
 func TestHeadersAreCanonical(t *testing.T) {
-	headers := map[string]string{
+	testutil.AssertHeadersAreCanonical(t, map[string]string{
 		"IDHeader":            IDHeader,
 		"RegionHeader":        RegionHeader,
 		"ClientIPHeader":      ClientIPHeader,
 		"ForwardedPortHeader": ForwardedPortHeader,
-	}
-
-	for name, val := range headers {
-		exp := textproto.CanonicalMIMEHeaderKey(val)
-		assert.Equal(t, exp, val, "var: %s", name)
-	}
+	})
 }
 
 func TestID(t *testing.T) {

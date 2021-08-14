@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/azazeal/fly/pkg/env"
 )
 
 // Header denotes fly's replay header.
@@ -87,4 +89,30 @@ func Source(r *http.Request) (inf *SourceInfo) {
 	}
 
 	return
+}
+
+// InRegionHandler returns a Handler that runs h when region equals the fly
+// environment's region at the time of the call.
+//
+// In all other cases, InRegionHandler returns RegionHandler(region, state).
+func InRegionHandler(h http.Handler, region, state string) http.Handler {
+	if region == env.Region() {
+		return h
+	}
+
+	return RegionHandler(region, state)
+}
+
+// RegionHandler returns a Handler that always responds with a replay response
+// for the given region and state.
+func RegionHandler(region, state string) http.Handler {
+	return RegionFunc(region, state)
+}
+
+// RegionFunc returns a HandlerFunc that always responds with a replay response
+// for the given region and state.
+func RegionFunc(region, state string) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		In(w, region, state)
+	}
 }

@@ -1,6 +1,8 @@
 package replay
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/azazeal/fly/internal/testutil"
+	"github.com/azazeal/fly/pkg/env"
 )
 
 type inTestCase struct {
@@ -137,4 +140,70 @@ func TestSource(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInRegionHandlerForRegion(t *testing.T) {
+	region, state, restoreEnv := setupInRegionHandlerTest(t)
+	defer restoreEnv()
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	h := InRegionHandler(http.HandlerFunc(execute), region, state)
+
+	h.ServeHTTP(rec, req)
+	res := rec.Result()
+
+	// TODO: use io.ReadAll when support for Go 1.15 is dropped
+	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
+	assert.Equal(t, "executed", string(body))
+}
+
+func TestInRegionHandlerForOtherRegion(t *testing.T) {
+	currentRegion, state, restoreEnv := setupInRegionHandlerTest(t)
+	defer restoreEnv()
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	primaryRegion := otherRegion(t, currentRegion)
+	h := InRegionHandler(http.HandlerFunc(execute), primaryRegion, state)
+
+	h.ServeHTTP(rec, req)
+	res := rec.Result()
+
+	// TODO: use io.ReadAll when support for Go 1.15 is dropped
+	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
+
+	assert.Equal(t, "Conflict\n", string(body))
+	assert.Equal(t, http.StatusConflict, res.StatusCode)
+
+	exp := fmt.Sprintf("region=%s;state=%s", primaryRegion, state)
+	assert.Equal(t, res.Header.Get("fly-replay"), exp)
+}
+
+func setupInRegionHandlerTest(t *testing.T) (region, state string, fn func()) {
+	t.Helper()
+
+	region = testutil.HexString(t, 3)
+	fn = testutil.SetEnv(t, map[string]string{env.RegionKey: region})
+	state = testutil.HexString(t, 20)
+
+	return
+}
+
+func otherRegion(t *testing.T, region string) (other string) {
+	for other = region; other == region; other = testutil.HexString(t, 3) {
+		continue
+	}
+
+	return
+}
+
+func execute(w http.ResponseWriter, _ *http.Request) {
+	_, _ = io.WriteString(w, "executed")
+
+	return
 }

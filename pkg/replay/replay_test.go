@@ -71,14 +71,6 @@ func TestIn(t *testing.T) {
 	}
 }
 
-// Fly-Replay-Src [instance=50f17653;region=ams;t=1628960671238231;state=123]
-//
-// - instance: 50f17653
-// - region: ams
-// - time: 2021-08-14 17:04:31.238231 +0000 UTC
-// - state: 123
-//
-
 func TestSource(t *testing.T) {
 	buildRequest := func(add bool, hdr string) (r *http.Request) {
 		r = httptest.NewRequest(http.MethodGet, "/", nil)

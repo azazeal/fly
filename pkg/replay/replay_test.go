@@ -3,7 +3,6 @@ package replay
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -60,8 +59,7 @@ func TestIn(t *testing.T) {
 			kase.ServeHTTP(rec, req)
 			res := rec.Result()
 
-			// TODO: use io.ReadAll when support for Go 1.15 is dropped
-			got, err := ioutil.ReadAll(res.Body)
+			got, err := io.ReadAll(res.Body)
 			require.NoError(t, err)
 
 			assert.Equal(t, http.StatusConflict, res.StatusCode)
@@ -146,8 +144,7 @@ func TestInRegionHandlerForRegion(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	res := rec.Result()
 
-	// TODO: use io.ReadAll when support for Go 1.15 is dropped
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
 	assert.Equal(t, "executed", string(body))
 }
@@ -165,8 +162,7 @@ func TestInRegionHandlerForOtherRegion(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	res := rec.Result()
 
-	// TODO: use io.ReadAll when support for Go 1.15 is dropped
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
 
 	assert.Equal(t, "Conflict\n", string(body))

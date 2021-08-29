@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/azazeal/fly/pkg/env"
+	"github.com/azazeal/fly/env"
 )
 
 // Header denotes fly's replay header.

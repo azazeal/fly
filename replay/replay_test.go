@@ -13,8 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/azazeal/fly/env"
+
 	"github.com/azazeal/fly/internal/testutil"
-	"github.com/azazeal/fly/pkg/env"
 )
 
 type inTestCase struct {

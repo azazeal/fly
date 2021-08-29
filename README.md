@@ -17,8 +17,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/azazeal/fly/pkg/dns"
-	"github.com/azazeal/fly/pkg/env"
+	"github.com/azazeal/fly/dns"
+	"github.com/azazeal/fly/env"
 )
 
 func main() {

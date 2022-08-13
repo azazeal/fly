@@ -16,7 +16,11 @@ const (
 
 func TestIsSet(t *testing.T) {
 	forEachCase(t, func(t *testing.T, kase *testCase) {
-		defer testutil.SetEnv(t, kase.env)()
+		t.Helper()
+
+		for k, v := range kase.env {
+			t.Setenv(k, v)
+		}
 
 		assert.Equal(t, kase.exp, IsSet())
 	})
@@ -24,6 +28,8 @@ func TestIsSet(t *testing.T) {
 
 func TestMap(t *testing.T) {
 	forEachCase(t, func(t *testing.T, kase *testCase) {
+		t.Helper()
+
 		var exp map[string]string
 
 		for k, v := range kase.env {
@@ -36,7 +42,9 @@ func TestMap(t *testing.T) {
 			exp[k] = v
 		}
 
-		defer testutil.SetEnv(t, kase.env)()
+		for k, v := range kase.env {
+			t.Setenv(k, v)
+		}
 
 		assert.Equal(t, exp, Map())
 	})
@@ -68,11 +76,8 @@ func TestGetters(t *testing.T) {
 		get := funcs[key]
 
 		t.Run(key, func(t *testing.T) {
-			defer testutil.SetEnv(t, nil)()
-			assert.Equal(t, "", get())
-
 			exp := value(t)
-			_ = testutil.SetEnv(t, map[string]string{key: exp})
+			t.Setenv(key, exp)
 			assert.Equal(t, exp, get())
 		})
 	}

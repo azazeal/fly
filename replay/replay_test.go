@@ -59,6 +59,7 @@ func TestIn(t *testing.T) {
 
 			kase.ServeHTTP(rec, req)
 			res := rec.Result()
+			defer res.Body.Close()
 
 			got, err := io.ReadAll(res.Body)
 			require.NoError(t, err)
@@ -134,8 +135,7 @@ func TestSource(t *testing.T) {
 }
 
 func TestInRegionHandlerForRegion(t *testing.T) {
-	region, state, restoreEnv := setupInRegionHandlerTest(t)
-	defer restoreEnv()
+	region, state := setupInRegionHandlerTest(t)
 
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -144,6 +144,7 @@ func TestInRegionHandlerForRegion(t *testing.T) {
 
 	h.ServeHTTP(rec, req)
 	res := rec.Result()
+	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
@@ -151,8 +152,7 @@ func TestInRegionHandlerForRegion(t *testing.T) {
 }
 
 func TestInRegionHandlerForOtherRegion(t *testing.T) {
-	currentRegion, state, restoreEnv := setupInRegionHandlerTest(t)
-	defer restoreEnv()
+	currentRegion, state := setupInRegionHandlerTest(t)
 
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -162,6 +162,7 @@ func TestInRegionHandlerForOtherRegion(t *testing.T) {
 
 	h.ServeHTTP(rec, req)
 	res := rec.Result()
+	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
@@ -173,17 +174,20 @@ func TestInRegionHandlerForOtherRegion(t *testing.T) {
 	assert.Equal(t, res.Header.Get("fly-replay"), exp)
 }
 
-func setupInRegionHandlerTest(t *testing.T) (region, state string, fn func()) {
+func setupInRegionHandlerTest(t *testing.T) (region, state string) {
 	t.Helper()
 
 	region = testutil.HexString(t, 3)
-	fn = testutil.SetEnv(t, map[string]string{env.RegionKey: region})
+
+	t.Setenv(env.RegionKey, region)
 	state = testutil.HexString(t, 20)
 
 	return
 }
 
 func otherRegion(t *testing.T, region string) (other string) {
+	t.Helper()
+
 	for other = region; other == region; other = testutil.HexString(t, 3) {
 		continue
 	}
@@ -193,6 +197,4 @@ func otherRegion(t *testing.T, region string) (other string) {
 
 func execute(w http.ResponseWriter, _ *http.Request) {
 	_, _ = io.WriteString(w, "executed")
-
-	return
 }

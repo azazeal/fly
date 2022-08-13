@@ -74,8 +74,8 @@ func Source(r *http.Request) (inf *SourceInfo) {
 		case strings.HasPrefix(token, "region="):
 			inf.Region = token[7:]
 		case strings.HasPrefix(token, "t="):
-			if μS, err := strconv.ParseInt(token[2:], 10, 64); err == nil {
-				inf.Time = time.Unix(0, μS*1000)
+			if uS, err := strconv.ParseInt(token[2:], 10, 64); err == nil {
+				inf.Time = time.Unix(0, uS*1000)
 			}
 		case strings.HasPrefix(token, "state="):
 			inf.State = token[6:]

@@ -11,39 +11,61 @@ on:
       - opened
       - synchronize
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Run linter
-        uses: docker://morphy/revive-action:v2
+      - name: Setup Go
+        uses: actions/setup-go@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Configure Linter
+        run: |
+          curl -O https://raw.githubusercontent.com/azazeal/workflows/master/.golangci.yml
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@v3
         with:
-          config: "./revive.toml"
-          path: "./..."
+          version: v1.48
 
   test:
     name: Test
     needs: lint
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         go: ['1.18', '1.19']
+    runs-on: ubuntu-latest
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
+    - name: Setup Go
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go }}
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Run tests
-      run: go test -race -coverpkg=./... -coverprofile=coverage.cov -covermode=atomic ./...
-    - name: Start uploading coverage report
+    - name: Install gotestsum
+      run: |
+        go install gotest.tools/gotestsum@v1.8.1
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    - name: Run Test Suite
+      run: |
+        gotestsum -- -race -coverpkg=./... -coverprofile=coverprofile -covermode=atomic ./...
+      env:
+        GOTESTSUM_JSONFILE: gotestsum.json
+        SECURE_HOST: localhost:${{ job.services.secure.ports[10000] }}
+        SECRET: supersecret
+        INSECURE_HOST: localhost:${{ job.services.insecure.ports[10000] }}
+    - name: Annotate Test Suite Results
+      if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
+      uses: guyarb/golang-test-annotations@v0.5.1
+      with:
+        test-results: gotestsum.json
+    - name: Start Uploading Coverage Report
       uses: shogo82148/actions-goveralls@v1
       with:
-        path-to-profile: coverage.cov
+        path-to-profile: coverprofile
         flag-name: go${{ matrix.go }}
         parallel: true
 
@@ -52,7 +74,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Finish uploading coverage reports
+      - name: Finalize Uploading Coverage Report
         uses: shogo82148/actions-goveralls@v1
         with:
           parallel-finished: true

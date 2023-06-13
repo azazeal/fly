@@ -4,22 +4,30 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"strconv"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/azazeal/fly/internal/testutil"
 )
 
 func TestHeadersAreCanonical(t *testing.T) {
-	testutil.AssertHeadersAreCanonical(t, map[string]string{
+	headers := map[string]string{
 		"IDHeader":            IDHeader,
 		"RegionHeader":        RegionHeader,
 		"ClientIPHeader":      ClientIPHeader,
 		"ForwardedPortHeader": ForwardedPortHeader,
-	})
+	}
+
+	for name := range headers {
+		got := headers[name]
+
+		t.Run(name, func(t *testing.T) {
+			exp := textproto.CanonicalMIMEHeaderKey(got)
+
+			testutil.AssertEqual(t, exp, got)
+		})
+	}
 }
 
 func TestID(t *testing.T) {
@@ -28,7 +36,7 @@ func TestID(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("fly-request-id", exp)
 
-	assert.Equal(t, exp, ID(req))
+	testutil.AssertEqual(t, exp, ID(req))
 }
 
 func TestRegion(t *testing.T) {
@@ -37,7 +45,7 @@ func TestRegion(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("fly-region", exp)
 
-	assert.Equal(t, exp, Region(req))
+	testutil.AssertEqual(t, exp, Region(req))
 }
 
 func TestClientIP(t *testing.T) {
@@ -55,11 +63,11 @@ func TestClientIP(t *testing.T) {
 		},
 		2: {
 			lit: ipv4,
-			exp: parseIP(t, ipv4),
+			exp: testutil.ParseIP(t, ipv4),
 		},
 		3: {
 			lit: ipv6,
-			exp: parseIP(t, ipv6),
+			exp: testutil.ParseIP(t, ipv6),
 		},
 	}
 
@@ -70,18 +78,9 @@ func TestClientIP(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
 			req.Header.Set("fly-client-ip", kase.lit)
 
-			assert.Equal(t, kase.exp, ClientIP(req))
+			testutil.AssertEqual(t, kase.exp, ClientIP(req))
 		})
 	}
-}
-
-func parseIP(t *testing.T, s string) (ip net.IP) {
-	t.Helper()
-
-	ip = net.ParseIP(s)
-	require.NotNil(t, ip)
-
-	return
 }
 
 func TestForwardedPort(t *testing.T) {
@@ -117,7 +116,7 @@ func TestForwardedPort(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
 			req.Header.Set("fly-forwarded-port", kase.lit)
 
-			assert.Equal(t, kase.exp, ForwardedPort(req))
+			testutil.AssertEqual(t, kase.exp, ForwardedPort(req))
 		})
 	}
 }

@@ -18,7 +18,7 @@ func RNG(tb testing.TB) *mand.Rand {
 	}
 
 	seed := int64(binary.BigEndian.Uint64(buf))
-	return mand.New(mand.NewSource(seed))
+	return mand.New(mand.NewSource(seed)) //nolint:gosec // not returning a CSPRNG
 }
 
 // HexString returns a string of l hex characters.

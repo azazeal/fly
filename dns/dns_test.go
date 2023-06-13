@@ -1,11 +1,12 @@
 package dns
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"net"
+	"sort"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/azazeal/fly/internal/testutil"
 )
@@ -13,23 +14,30 @@ import (
 func TestRegions(t *testing.T) {
 	appName := token(t)
 
-	defer stub(&mockResolver{
+	rng := testutil.RNG(t)
+
+	t.Cleanup(stub(&mockResolver{
 		lookupTXT: func(_ context.Context, name string) ([]string, error) {
-			if name != "regions."+appName+".internal" {
-				return nil, assert.AnError
+			if exp := "regions." + appName + ".internal"; exp != name {
+				return nil, fmt.Errorf("wrong name: want %q, have %q", exp, name)
 			}
 
-			return []string{
+			ret := []string{
 				"iad,cdg",
 				"dfw,cdg,ewr",
 				"ams,atl",
-			}, nil
+			}
+			rng.Shuffle(len(ret), func(i, j int) { ret[i], ret[j] = ret[j], ret[i] })
+
+			return ret, nil
 		},
-	})()
+	}))
 
 	got, err := Regions(context.TODO(), appName)
-	assert.NoError(t, err)
-	assert.ElementsMatch(t, got, []string{
+	testutil.AssertEqual(t, nil, err)
+
+	sort.Strings(got)
+	testutil.AssertEqual(t, []string{
 		"ams",
 		"atl",
 		"cdg",
@@ -37,38 +45,46 @@ func TestRegions(t *testing.T) {
 		"dfw",
 		"ewr",
 		"iad",
-	})
+	}, got)
 }
 
 func TestAllInstances(t *testing.T) {
 	appName := token(t)
 
-	defer stub(&mockResolver{
+	t.Cleanup(stub(&mockResolver{
 		lookupIP: func(_ context.Context, network, name string) ([]net.IP, error) {
-			if network != "ip6" || name != "global."+appName+".internal" {
-				return nil, assert.AnError
+			if want := "ip6"; want != network {
+				return nil, fmt.Errorf("wrong network: want %q, have %q", want, name)
+			} else if want := "global." + appName + ".internal"; want != name {
+				return nil, fmt.Errorf("wrong name: want %q, have %q", want, name)
 			}
 
-			return []net.IP{
-				net.ParseIP("fdaa:0:22b7:a7b:ab8:3071:ecb3:2"),
+			ret := []net.IP{
 				net.ParseIP("fdaa:0:22b7:a7b:abd:aa3c:6498:2"),
-			}, nil
+				net.ParseIP("fdaa:0:22b7:a7b:ab8:3071:ecb3:2"),
+			}
+
+			return ret, nil
 		},
-	})()
+	}))
 
 	got, err := Instances(context.TODO(), appName, "")
-	assert.NoError(t, err)
-	assert.ElementsMatch(t, got, []net.IP{
-		net.ParseIP("fdaa:0:22b7:a7b:abd:aa3c:6498:2"),
-		net.ParseIP("fdaa:0:22b7:a7b:ab8:3071:ecb3:2"),
+	testutil.AssertEqual(t, nil, err)
+
+	sort.Slice(got, func(i, j int) bool {
+		return bytes.Compare(got[i], got[j]) == -1
 	})
+	testutil.AssertEqual(t, []net.IP{
+		net.ParseIP("fdaa:0:22b7:a7b:ab8:3071:ecb3:2"),
+		net.ParseIP("fdaa:0:22b7:a7b:abd:aa3c:6498:2"),
+	}, got)
 }
 
 func TestApps(t *testing.T) {
-	defer stub(&mockResolver{
+	t.Cleanup(stub(&mockResolver{
 		lookupTXT: func(_ context.Context, name string) ([]string, error) {
-			if name != "_apps.internal" {
-				return nil, assert.AnError
+			if want := "_apps.internal"; want != name {
+				return nil, fmt.Errorf("wrong name: want %q, have %q", want, name)
 			}
 
 			return []string{
@@ -77,24 +93,26 @@ func TestApps(t *testing.T) {
 				"app2,app4",
 			}, nil
 		},
-	})()
+	}))
 
 	got, err := Apps(context.TODO())
-	assert.NoError(t, err)
-	assert.ElementsMatch(t, got, []string{
+	testutil.AssertEqual(t, nil, err)
+
+	sort.Strings(got)
+	testutil.AssertEqual(t, []string{
 		"app1",
 		"app2",
 		"app2", // appears twice on purpose
 		"app3",
 		"app4",
-	})
+	}, got)
 }
 
 func TestPeers(t *testing.T) {
-	defer stub(&mockResolver{
+	t.Cleanup(stub(&mockResolver{
 		lookupTXT: func(_ context.Context, name string) ([]string, error) {
-			if name != "_peer.internal" {
-				return nil, assert.AnError
+			if want := "_peer.internal"; want != name {
+				return nil, fmt.Errorf("wrong name: want %q, have %q", want, name)
 			}
 
 			return []string{
@@ -103,11 +121,13 @@ func TestPeers(t *testing.T) {
 				"peer3,peer4",
 			}, nil
 		},
-	})()
+	}))
 
 	got, err := Peers(context.TODO())
-	assert.NoError(t, err)
-	assert.ElementsMatch(t, got, []string{
+	testutil.AssertEqual(t, nil, err)
+
+	sort.Strings(got)
+	testutil.AssertEqual(t, []string{
 		"peer1",
 		"peer1", // appears twice on purpose
 		"peer2",
@@ -115,7 +135,7 @@ func TestPeers(t *testing.T) {
 		"peer3", // appears twice on purpose
 		"peer4",
 		"peer4", // appears twice on purpose
-	})
+	}, got)
 }
 
 func TestPeer(t *testing.T) {
@@ -126,10 +146,12 @@ func TestPeer(t *testing.T) {
 
 	peer := token(t)
 
-	defer stub(&mockResolver{
+	t.Cleanup(stub(&mockResolver{
 		lookupIP: func(_ context.Context, network, name string) ([]net.IP, error) {
-			if network != "ip6" || name != peer+"._peer.internal" {
-				return nil, assert.AnError
+			if want := "ip6"; want != network {
+				return nil, fmt.Errorf("wrong network: want %q, have %q", want, name)
+			} else if want := peer + "._peer.internal"; want != name {
+				return nil, fmt.Errorf("wrong name: want %q, have %q", want, name)
 			}
 
 			return []net.IP{
@@ -137,11 +159,11 @@ func TestPeer(t *testing.T) {
 				testutil.ParseIP(t, ip1),
 			}, nil
 		},
-	})()
+	}))
 
 	got, err := Peer(context.TODO(), peer)
-	assert.NoError(t, err)
-	assert.Equal(t, testutil.ParseIP(t, ip2), got)
+	testutil.AssertEqual(t, nil, err)
+	testutil.AssertEqual(t, testutil.ParseIP(t, ip2), got)
 }
 
 func TestPrivateIP(t *testing.T) {
@@ -150,10 +172,12 @@ func TestPrivateIP(t *testing.T) {
 		ip2 = "fdaa:0:22b7:a7b:ab8:244c:ae91:2"
 	)
 
-	defer stub(&mockResolver{
+	t.Cleanup(stub(&mockResolver{
 		lookupIP: func(_ context.Context, network, name string) ([]net.IP, error) {
-			if network != "ip6" || name != "fly-local-6pn" {
-				return nil, assert.AnError
+			if want := "ip6"; want != network {
+				return nil, fmt.Errorf("wrong network: want %q, have %q", want, name)
+			} else if want := "fly-local-6pn"; want != name {
+				return nil, fmt.Errorf("wrong name: want %q, have %q", want, name)
 			}
 
 			return []net.IP{
@@ -161,11 +185,11 @@ func TestPrivateIP(t *testing.T) {
 				testutil.ParseIP(t, ip1),
 			}, nil
 		},
-	})()
+	}))
 
 	got, err := PrivateIP(context.TODO())
-	assert.NoError(t, err)
-	assert.Equal(t, testutil.ParseIP(t, ip2), got)
+	testutil.AssertEqual(t, nil, err)
+	testutil.AssertEqual(t, testutil.ParseIP(t, ip2), got)
 }
 
 type mockResolver struct {

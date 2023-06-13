@@ -4,8 +4,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/azazeal/fly/internal/testutil"
 )
 
@@ -22,7 +20,7 @@ func TestIsSet(t *testing.T) {
 			t.Setenv(k, v)
 		}
 
-		assert.Equal(t, kase.exp, IsSet())
+		testutil.AssertEqual(t, kase.exp, IsSet())
 	})
 }
 
@@ -46,7 +44,7 @@ func TestMap(t *testing.T) {
 			t.Setenv(k, v)
 		}
 
-		assert.Equal(t, exp, Map())
+		testutil.AssertEqual(t, exp, Map())
 	})
 }
 
@@ -78,7 +76,7 @@ func TestGetters(t *testing.T) {
 		t.Run(key, func(t *testing.T) {
 			exp := value(t)
 			t.Setenv(key, exp)
-			assert.Equal(t, exp, get())
+			testutil.AssertEqual(t, exp, get())
 		})
 	}
 }

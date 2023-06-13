@@ -13,7 +13,7 @@ func ParseIP(tb testing.TB, s string) (ip net.IP) {
 	tb.Helper()
 
 	if ip = net.ParseIP(s); ip == nil {
-		tb.Fatalf("failed parsing ip: %q", s)
+		tb.Fatalf("failed parsing %q as a net.IP", s)
 	}
 
 	return

@@ -10,9 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/azazeal/fly/env"
 
 	"github.com/azazeal/fly/internal/testutil"
@@ -61,12 +58,11 @@ func TestIn(t *testing.T) {
 			res := rec.Result()
 			defer res.Body.Close()
 
-			got, err := io.ReadAll(res.Body)
-			require.NoError(t, err)
+			got := testutil.ReadAll(t, res.Body)
 
-			assert.Equal(t, http.StatusConflict, res.StatusCode)
-			assert.Equal(t, http.StatusText(http.StatusConflict)+"\n", string(got))
-			assert.Equal(t, kase.exp(), res.Header.Get("Fly-Replay"))
+			testutil.AssertEqual(t, http.StatusConflict, res.StatusCode)
+			testutil.AssertEqual(t, http.StatusText(http.StatusConflict)+"\n", got)
+			testutil.AssertEqual(t, kase.exp(), res.Header.Get("fly-replay"))
 		})
 	}
 }
@@ -125,11 +121,7 @@ func TestSource(t *testing.T) {
 
 		t.Run(strconv.Itoa(caseIndex), func(t *testing.T) {
 			got := Source(kase.req)
-			if kase.exp == nil {
-				assert.Nil(t, got)
-			} else {
-				assert.Equal(t, kase.exp, got)
-			}
+			testutil.AssertEqual(t, kase.exp, got)
 		})
 	}
 }
@@ -146,9 +138,8 @@ func TestInRegionHandlerForRegion(t *testing.T) {
 	res := rec.Result()
 	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-	require.NoError(t, err)
-	assert.Equal(t, "executed", string(body))
+	body := testutil.ReadAll(t, res.Body)
+	testutil.AssertEqual(t, "executed", body)
 }
 
 func TestInRegionHandlerForOtherRegion(t *testing.T) {
@@ -164,14 +155,13 @@ func TestInRegionHandlerForOtherRegion(t *testing.T) {
 	res := rec.Result()
 	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-	require.NoError(t, err)
+	body := testutil.ReadAll(t, res.Body)
 
-	assert.Equal(t, "Conflict\n", string(body))
-	assert.Equal(t, http.StatusConflict, res.StatusCode)
+	testutil.AssertEqual(t, "Conflict\n", body)
+	testutil.AssertEqual(t, http.StatusConflict, res.StatusCode)
 
 	exp := fmt.Sprintf("region=%s;state=%s", primaryRegion, state)
-	assert.Equal(t, res.Header.Get("fly-replay"), exp)
+	testutil.AssertEqual(t, res.Header.Get("fly-replay"), exp)
 }
 
 func setupInRegionHandlerTest(t *testing.T) (region, state string) {

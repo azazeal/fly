@@ -1,8 +1,6 @@
 name: Build
 
 on:
-  schedule:
-    - cron: "0 6 * * THU"
   push:
     tags-ignore:
       - "**"

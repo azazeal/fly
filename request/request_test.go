@@ -34,7 +34,7 @@ func TestID(t *testing.T) {
 	exp := testutil.HexString(t, 26)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Header.Set("fly-request-id", exp)
+	req.Header.Set("fly-request-id", exp) //nolint:canonicalheader // fly dox specify this header
 
 	testutil.AssertEqual(t, exp, ID(req))
 }
@@ -43,7 +43,7 @@ func TestRegion(t *testing.T) {
 	exp := testutil.HexString(t, 3)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Header.Set("fly-region", exp)
+	req.Header.Set("fly-region", exp) //nolint:canonicalheader // fly dox specify this header
 
 	testutil.AssertEqual(t, exp, Region(req))
 }
@@ -76,7 +76,7 @@ func TestClientIP(t *testing.T) {
 
 		t.Run(strconv.Itoa(caseIndex), func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			req.Header.Set("fly-client-ip", kase.lit)
+			req.Header.Set("fly-client-ip", kase.lit) //nolint:canonicalheader // fly dox specify this header
 
 			testutil.AssertEqual(t, kase.exp, ClientIP(req))
 		})
@@ -114,7 +114,7 @@ func TestForwardedPort(t *testing.T) {
 
 		t.Run(strconv.Itoa(caseIndex), func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			req.Header.Set("fly-forwarded-port", kase.lit)
+			req.Header.Set("fly-forwarded-port", kase.lit) //nolint:canonicalheader // fly dox specify this header
 
 			testutil.AssertEqual(t, kase.exp, ForwardedPort(req))
 		})

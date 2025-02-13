@@ -62,7 +62,8 @@ func TestIn(t *testing.T) {
 
 			testutil.AssertEqual(t, http.StatusConflict, res.StatusCode)
 			testutil.AssertEqual(t, http.StatusText(http.StatusConflict)+"\n", got)
-			testutil.AssertEqual(t, kase.exp(), res.Header.Get("fly-replay"))
+			v := res.Header.Get("fly-replay") //nolint:canonicalheader // fly dox specify this header
+			testutil.AssertEqual(t, kase.exp(), v)
 		})
 	}
 }
@@ -71,7 +72,7 @@ func TestSource(t *testing.T) {
 	buildRequest := func(add bool, hdr string) (r *http.Request) {
 		r = httptest.NewRequest(http.MethodGet, "/", nil)
 		if add {
-			r.Header.Add("fly-replay-src", hdr)
+			r.Header.Add("fly-replay-src", hdr) //nolint:canonicalheader // fly dox specify this header
 		}
 
 		return r
@@ -161,7 +162,7 @@ func TestInRegionHandlerForOtherRegion(t *testing.T) {
 	testutil.AssertEqual(t, http.StatusConflict, res.StatusCode)
 
 	exp := fmt.Sprintf("region=%s;state=%s", primaryRegion, state)
-	testutil.AssertEqual(t, res.Header.Get("fly-replay"), exp)
+	testutil.AssertEqual(t, res.Header.Get("fly-replay"), exp) //nolint:canonicalheader // fly dox specify this header
 }
 
 func setupInRegionHandlerTest(t *testing.T) (region, state string) {

@@ -17,8 +17,8 @@ func RNG(tb testing.TB) *mand.Rand {
 		tb.Fatalf("failed seeding RNG: %v", err)
 	}
 
-	seed := int64(binary.BigEndian.Uint64(buf))
-	return mand.New(mand.NewSource(seed)) //nolint:gosec // not returning a CSPRNG
+	seed := int64(binary.BigEndian.Uint64(buf)) //nolint:gosec // no issue with any possible overflow
+	return mand.New(mand.NewSource(seed))       //nolint:gosec // not returning a CSPRNG
 }
 
 // HexString returns a string of l hex characters.
